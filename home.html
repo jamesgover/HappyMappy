@@ -44,20 +44,38 @@
             min-width: 180px;
         }
     </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
 <body>
-
 
     <div id="page panel" class="panel panel-default">
         <div class="panel-body">
             <h2>My Map</h2>
+
+            <input class="ip" value="8.8.8.8">
+            <button class="send">Go</button>
+            <br><br>
+            <span class="city"></span>,
+            <span class="country"></span>
+
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">Etherium Network Map</h3>
                 </div>
                 <div class="panel-body">
-                    <div id="map" class="map"></div>
+                    <div id="map" class="map"></div><!-- show map -->
+                    <div style="display: none;">
+                        <!-- Clickable label for Vienna -->
+                        <a class="overlay" id="vienna" target="_blank" href="http://en.wikipedia.org/wiki/Vienna">Vienna</a>
+                        <div id="marker" title="Marker"></div>
+                        <!-- Popup -->
+                        <div id="popup" title="Welcome to OpenLayers"></div>
+                    </div>
+
                     <script type="text/javascript">
+                        var layer = new ol.layer.Tile({
+                            source: new ol.source.OSM()
+                        });
                         var map = new ol.Map({
                             target: 'map',
                             layers: [
@@ -70,10 +88,50 @@
                                 zoom: 2.4
                             })
                         });
+
+                        var pos = ol.proj.fromLonLat([16.3725, 48.208889]);
+                        // Vienna marker
+                        var marker = new ol.Overlay({
+                            position: pos,
+                            positioning: 'center-center',
+                            element: document.getElementById('marker'),
+                            stopEvent: false
+                        });
+                        map.addOverlay(marker);
+
+                        // Vienna label
+                        var vienna = new ol.Overlay({
+                            position: pos,
+                            element: document.getElementById('vienna')
+                        });
+                        map.addOverlay(vienna);
+
+                        // Popup showing the position the user clicked
+                        var popup = new ol.Overlay({
+                            element: document.getElementById('popup')
+                        });
+                        map.addOverlay(popup);
                     </script>
+                    <script type="application/javascript">
+                        function getip(json){
+                            alert(json.ip); // alerts the ip address
+                        }
+                    </script>
+
+                    <script type="application/javascript" src="http://jsonip.appspot.com/?callback=getip"></script>
+                    <script type="application/javascript" src="http://www.geoplugin.net/json.gp?ip=<your ip here>&jsoncallback=<suitable javascript function in your source>"></script>
                 </div>
             </div>
         </div>
     </div>
+    <script>
+        $('.send').on('click', function(){
+
+            $.getJSON('https://ipapi.co/'+$('.ip').val()+'/json', function(data){
+                $('.city').text(data.city);
+                $('.country').text(data.country);
+            });
+        });
+    </script>
 </body>
 </html>
