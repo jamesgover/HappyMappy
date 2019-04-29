@@ -83,7 +83,16 @@
                     var style = new ol.style.Style({
                         stroke: new ol.style.Stroke({
                             color: '#EAE911',
-                            width: 2
+                            width: 2,
+                            fill: new ol.style.Fill({
+                                color: '#00E911'
+                            })
+                        }),
+                    });
+                    var circleStyle = new ol.style.Circle({
+                        color: '#00E911',
+                        fill: new ol.style.Fill({
+                            color: '#007911'
                         })
                     });
                     //works
@@ -187,6 +196,7 @@
                             if (feature.getGeometry() instanceof ol.geom.Circle){
                                 var coordsP = feature.getGeometry().getCoordinates();
                                 var currentPoint = new ol.geom.Circle(coordsP);
+                                currentPoint.currentFillStyle().set('color', '#FFFFF1')
                                 linesLayer.drawGeometry(currentPoint);
                             } else {
                                 var coords = feature.getGeometry().getCoordinates();
