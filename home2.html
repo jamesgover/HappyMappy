@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- for reference:
+ https://openlayers.org/en/latest/examples/flight-animation.html
+ https://gist.github.com/wavded/1200773?short_path=99c1af9-->
+<head>
+    <meta charset="UTF-8">
+    <title>COMS4507</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+
+    <script src="https://api.mapbox.com/mapbox.js/plugins/arc.js/v0.1.0/arc.js"></script>
+    <link rel="stylesheet" href="https://openlayers.org/en/v5.3.0/css/ol.css" type="text/css">
+    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+    <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css" type="text/css">
+    <style>
+        .map {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
+    <style>
+        #marker {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #088;
+            border-radius: 10px;
+            background-color: #0FF;
+            opacity: 0.5;
+        }
+        #brisbane {
+            text-decoration: none;
+            color: white;
+            font-size: 11pt;
+            font-weight: bold;
+            text-shadow: black 0.1em 0.1em 0.2em;
+        }
+
+        .popover-content {
+            min-width: 180px;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+
+<div id="page panel" class="panel panel-default">
+    <div class="panel-body">
+        <h2>My Map</h2>
+
+        <input class="ip" value="8.8.8.8">
+        <button class="send">Go</button>
+        <button class="mapper">map</button>
+        <br><br>
+        <span class="city"></span>,
+        <span class="country"></span>,
+        <span class="long"></span>,
+        <span class="lat"></span>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Etherium Network Map</h3>
+            </div>
+            <div class="panel-body">
+                <div id="map" class="map"></div><!-- show map -->
+                <div style="display: none;">
+                    <!-- Clickable label for brisbane -->
+                    <a class="overlay" id="brisbane" target="_blank" href="http://en.wikipedia.org/wiki/brisbane">brisbane</a>
+                    <div id="marker" title="Marker"></div>
+                    <!-- Popup -->
+                    <div id="popup" title="Welcome to OpenLayers"></div>
+                </div>
+
+                <script type="text/javascript">
+                    var style = new ol.style.Style({
+                        stroke: new ol.style.Stroke({
+                            color: '#EAE911',
+                            width: 2
+                        })
+                    });
+                    //works
+                    var layer = new ol.layer.Tile({
+                        source: new ol.source.OSM()
+                        // source: new ol.source.Stamen({ layer: 'toner'})
+                    });
+                    var map = new ol.Map({
+                        target: 'map',
+                        layers: [
+                            layer
+                        ],
+                        view: new ol.View({
+                            center: ol.proj.fromLonLat([153.01667, -10.47665]),
+                            zoom: 2.4
+                        })
+                    });
+
+                    var pos = ol.proj.fromLonLat([153.3725, -27.4]);
+                    // brisbane marker
+                    var marker = new ol.Overlay({
+                        position: pos,
+                        positioning: 'center-center',
+                        element: document.getElementById('marker'),
+                        stopEvent: false
+                    });
+                    map.addOverlay(marker);
+                    // brisbane label
+                    var brisbane = new ol.Overlay({
+                        position: pos,
+                        element: document.getElementById('brisbane')
+                    });
+                    map.addOverlay(brisbane);
+
+                    // Popup showing the position the user clicked
+                    var popup = new ol.Overlay({
+                        element: document.getElementById('popup')
+                    });
+                    map.addOverlay(popup);
+
+                    var lineSource = new ol.source.Vector( {
+                        wrapX: false,
+                        attributions: 'Flight data by james',
+                        loader: function() {
+                            //alert("A");
+                            const flightsData = [[[127,23],[0,0]]];//TODO get flight data
+                            for (var i = 0; i < flightsData.length; i++) {
+                                var flight = flightsData[i];
+                                var from = flight[0];
+                                var to = flight[1];
+                                //alert("B");
+                                // create an arc circle between the two locations
+                                var arcGenerator = new arc.GreatCircle(
+                                    {x: from[1], y: from[0]},
+                                    {x: to[1], y: to[0]});
+                                var arcLine = arcGenerator.Arc(100, {offset: 10});
+                                var line = new ol.geom.LineString(arcLine.geometries[0].coords);
+                                line.transform('EPSG:4326', 'EPSG:3857');
+                                var feature = new ol.Feature({
+                                    geometry: line
+                                });
+                                // add the feature
+                                lineSource.addFeature(feature);
+                                //alert(lineSource.getFeatures());
+                                //alert("end")
+                            }
+                            //map.on('precompose',animateLines);
+                            //map.on('postcompose', animateFlights);
+                            //map.on('render', animateFlights);
+                            //map.on('rendercomplete', animateFlights);
+                        },
+                    });
+                    alert("hi");
+                    var linesLayer = new ol.layer.Vector({
+                        source: lineSource,
+                        style: function(feature) {
+                            // if the animation is still active for a feature, do not
+                            // render the feature with the layer style
+                            return style;
+                        }
+                    });
+                    function add_arcs() {
+                        var features = lineSource.getFeatures();
+                        for (var i = 0; i < features.length; i++) {
+                            var feature = features[i];
+                            var coords = feature.getGeometry().getCoordinates();
+                            var currentLine = new LineString(coords);
+                            linesLayer.drawGeometry(currentLine);
+                        }
+                    }
+                    add_arcs();
+                    map.addLayer(linesLayer);
+
+                    //Dots
+                    var pointsPerMs = 0.1;
+                    function animateLines(event) {
+                        var vectorContext = event.vectorContext;
+                        var frameState = event.frameState;
+                        vectorContext.setStyle(style);
+
+                        var features = lineSource.getFeatures();
+                        //alert("features:" + features);
+                        for (var i = 0; i < features.length; i++) {
+                            var feature = features[i];
+                            //alert("feature:" + feature);
+                            var coords = feature.getGeometry().getCoordinates();
+                            //alert("coords:" + coords);
+                            var currentLine = new LineString(coords);
+
+                            // directly draw the line with the vector context
+                            vectorContext.drawGeometry(currentLine);
+                        }
+                        // tell OpenLayers to continue the animation
+                        map.render();
+                    }
+
+                    //map.onclick(animateLines(event));//"postcompose", animateLines);
+
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+<script> // handles the buttons atm
+$('.send').on('click', function(){
+    $.getJSON('https://ipapi.co/'+$('.ip').val()+'/json', function(data){
+        $('.city').text(data.city);
+        $('.country').text(data.country);
+        $('.long').text(data.longitude);
+        $('.lat').text(data.latitude);
+    });
+});
+$('.mapper').on('click', function(){
+    $.getJSON('https://ipapi.co/'+$('.ip').val()+'/json', function(data) {
+        var lat = data.latitude;
+        var long = data.longitude;
+        document.getElementById('brisbane').innerText=data.city
+        var pos = ol.proj.fromLonLat([long, lat]);
+        // brisbane marker
+        var marker = new ol.Overlay({
+            position: pos,
+            positioning: 'center-center',
+            element: document.getElementById('marker'),
+            stopEvent: false
+        });
+        map.addOverlay(marker);
+        // brisbane label
+        var brisbane = new ol.Overlay({
+            position: pos,
+            element: document.getElementById('brisbane')
+        });
+        map.addOverlay(brisbane);
+    });
+});
+</script>
+</body>
+</html>

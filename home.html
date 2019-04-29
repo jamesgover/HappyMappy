@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- for reference:
+ https://openlayers.org/en/latest/examples/flight-animation.html
+ https://gist.github.com/wavded/1200773?short_path=99c1af9-->
 <head>
     <meta charset="UTF-8">
     <title>COMS4507</title>
@@ -12,6 +15,7 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
 
+    <script src="https://api.mapbox.com/mapbox.js/plugins/arc.js/v0.1.0/arc.js"></script>
     <link rel="stylesheet" href="https://openlayers.org/en/v5.3.0/css/ol.css" type="text/css">
     <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
     <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
@@ -33,13 +37,14 @@
             background-color: #0FF;
             opacity: 0.5;
         }
-        #vienna {
+        #brisbane {
             text-decoration: none;
             color: white;
             font-size: 11pt;
             font-weight: bold;
             text-shadow: black 0.1em 0.1em 0.2em;
         }
+
         .popover-content {
             min-width: 180px;
         }
@@ -68,32 +73,37 @@
                 <div class="panel-body">
                     <div id="map" class="map"></div><!-- show map -->
                     <div style="display: none;">
-                        <!-- Clickable label for Vienna -->
-                        <a class="overlay" id="vienna" target="_blank" href="http://en.wikipedia.org/wiki/Vienna">Vienna</a>
+                        <!-- Clickable label for brisbane -->
+                        <a class="overlay" id="brisbane" target="_blank" href="http://en.wikipedia.org/wiki/brisbane">brisbane</a>
                         <div id="marker" title="Marker"></div>
                         <!-- Popup -->
                         <div id="popup" title="Welcome to OpenLayers"></div>
                     </div>
 
                     <script type="text/javascript">
+                        var style = new ol.style.Style({
+                            stroke: new ol.style.Stroke({
+                                color: '#EAE911',
+                                width: 2
+                            })
+                        });
+
                         var layer = new ol.layer.Tile({
                             source: new ol.source.OSM()
                         });
                         var map = new ol.Map({
                             target: 'map',
                             layers: [
-                                new ol.layer.Tile({
-                                    source: new ol.source.OSM()
-                                })
+                                layer
                             ],
                             view: new ol.View({
-                                center: ol.proj.fromLonLat([27.98, 27.51]),
+                                center: ol.proj.fromLonLat([153.01667, -10.47665]),
                                 zoom: 2.4
                             })
                         });
 
-                        var pos = ol.proj.fromLonLat([16.3725, 48.208889]);
-                        // Vienna marker
+                        var pos = ol.proj.fromLonLat([153.3725, -27.4]);
+                        // brisbane marker
                         var marker = new ol.Overlay({
                             position: pos,
                             positioning: 'center-center',
@@ -101,27 +111,60 @@
                             stopEvent: false
                         });
                         map.addOverlay(marker);
-                        // Vienna label
-                        var vienna = new ol.Overlay({
+                        // brisbane label
+                        var brisbane = new ol.Overlay({
                             position: pos,
-                            element: document.getElementById('vienna')
+                            element: document.getElementById('brisbane')
                         });
-                        map.addOverlay(vienna);
+                        map.addOverlay(brisbane);
 
                         // Popup showing the position the user clicked
                         var popup = new ol.Overlay({
                             element: document.getElementById('popup')
                         });
                         map.addOverlay(popup);
-                    </script>
-                    <script type="application/javascript">
-                        function getip(json){
-                            alert(json.ip); // alerts the ip address
-                        }
-                    </script>
 
-                    <script type="application/javascript" src="http://jsonip.appspot.com/?callback=getip"></script>
-                    <script type="application/javascript" src="http://www.geoplugin.net/json.gp?ip=<your ip here>&jsoncallback=<suitable javascript function in your source>"></script>
+                        var lines = new VectorSource( {
+                            wrapX: false,
+                            attributions: 'Flight data by james',
+                            loader: function() {
+                                alert("A");
+                                const flightsData = [[[127,23],[0,0]]];//TODO get flight data
+                                then(function() {
+                                    for (var i = 0; i < flightsData.length; i++) {
+                                        var flight = flightsData[i];
+                                        var from = flight[0];
+                                        var to = flight[1];
+                                        alert("B");
+                                        // create an arc circle between the two locations
+                                        var arcGenerator = new arc.GreatCircle(
+                                            {x: from[1], y: from[0]},
+                                            {x: to[1], y: to[0]});
+                                        var arcLine = arcGenerator.Arc(100, {offset: 10});
+                                        var line = new ol.geom.LineString.LineString(arcLine.geometries[0].coords);
+                                        //line.transform('EPSG:4326', 'EPSG:3857');
+                                        var feature = new ol.Feature.Feature({
+                                            geometry: line
+                                        });
+                                        // add the feature with a delay so that the animation
+                                        // for all features does not start at the same time
+                                        lines.addFeature(feature);
+                                    }
+                                });
+                            },
+                        });
+                        alert("hi")
+                        var linesLayer = new ol.layer.Vector({
+                            source: lines,
+                            style: function() {
+                                return style;
+                            }
+                        });
+                        map.addLayer(linesLayer);
+
+                        //Dots
+
+                    </script>
                 </div>
             </div>
         </div>
@@ -139,9 +182,9 @@
             $.getJSON('https://ipapi.co/'+$('.ip').val()+'/json', function(data) {
                 var lat = data.latitude;
                 var long = data.longitude;
-                document.getElementById('vienna').innerText=data.city
+                document.getElementById('brisbane').innerText=data.city
                 var pos = ol.proj.fromLonLat([long, lat]);
-                // Vienna marker
+                // brisbane marker
                 var marker = new ol.Overlay({
                     position: pos,
                     positioning: 'center-center',
@@ -149,12 +192,12 @@
                     stopEvent: false
                 });
                 map.addOverlay(marker);
-                // Vienna label
-                var vienna = new ol.Overlay({
+                // brisbane label
+                var brisbane = new ol.Overlay({
                     position: pos,
-                    element: document.getElementById('vienna')
+                    element: document.getElementById('brisbane')
                 });
-                map.addOverlay(vienna);
+                map.addOverlay(brisbane);
             });
         });
     </script>
