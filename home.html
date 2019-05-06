@@ -129,16 +129,16 @@
                         attributions: 'Flight data by james',
                         loader: function() {
                             //alert("A");
-                            const flightsData = [[[127,23],[0,0]],[[17,3],[54,23]],[[17,23],[9,9]]];//TODO get flight data
-                            for (var i = 0; i < flightsData.length; i++) {
-                                var flight = flightsData[i];
+                            const transactionData = [[[127,23],[0,0]],[[17,3],[-122.0838, 37.386]],[[17,23],[9,9]]];//TODO get flight data
+                            for (var i = 0; i < transactionData.length; i++) {
+                                var flight = transactionData[i];
                                 var from = flight[0];
                                 var to = flight[1];
                                 //alert("B");
                                 // create an arc circle between the two locations
                                 var arcGenerator = new arc.GreatCircle(
-                                    {x: from[1], y: from[0]},
-                                    {x: to[1], y: to[0]});
+                                    {x: from[0], y: from[1]},
+                                    {x: to[0], y: to[1]});
                                 var arcLine = arcGenerator.Arc(100, {offset: 10});
                                 var line = new ol.geom.LineString(arcLine.geometries[0].coords);
                                 line.transform('EPSG:4326', 'EPSG:3857');
@@ -147,6 +147,21 @@
                                 });
                                 // add the feature
                                 lineSource.addFeature(feature);
+                                //alert(lineSource.getFeatures());
+                                //alert("end")
+                            }
+
+                            const nodeData = [[127,23],[0,0],[17,3],[-122.0838, 37.386],[17,23],[9,9]];//TODO get flight data
+                            for (var i = 0; i < nodeData.length; i++) {
+                                var node = nodeData[i];
+                                //alert("B");
+                                var point = new ol.geom.Circle(node, 1);
+                                point.transform('EPSG:4326', 'EPSG:3857');
+                                var pointFeature = new ol.Feature({
+                                    geometry: point
+                                });
+                                // add the feature
+                                lineSource.addFeature(pointFeature);
                                 //alert(lineSource.getFeatures());
                                 //alert("end")
                             }
@@ -169,9 +184,15 @@
                         var features = lineSource.getFeatures();
                         for (var i = 0; i < features.length; i++) {
                             var feature = features[i];
-                            var coords = feature.getGeometry().getCoordinates();
-                            var currentLine = new LineString(coords);
-                            linesLayer.drawGeometry(currentLine);
+                            if (feature.getGeometry() instanceof ol.geom.Circle){
+                                var coordsP = feature.getGeometry().getCoordinates();
+                                var currentPoint = new ol.geom.Circle(coordsP);
+                                linesLayer.drawGeometry(currentPoint);
+                            } else {
+                                var coords = feature.getGeometry().getCoordinates();
+                                var currentLine = new ol.geom.LineString(coords);
+                                linesLayer.drawGeometry(currentLine);
+                            }
                         }
                     }
                     add_arcs();
