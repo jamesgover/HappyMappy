@@ -19,7 +19,7 @@ services:
     networks:
       - psql-pgql
   graphql:
-    container_name: pgql
+    container_name: graphql
     restart: always
     image: graphile/postgraphile
     depends_on:
@@ -33,6 +33,24 @@ services:
     command: ["postgraphile", "--connection", "postgres://postgres:1234@db:5432/happy", "--host", "0.0.0.0", "--port", "5000", "--schema", "mappy"]
     links:
       - db
+    networks:
+      - psql-pgql
+  app:
+    container_name: happy
+    restart: always
+    image: happy
+    build:
+      context: .
+    depends_on:
+      - graphql
+    environment:
+      GRAPHQL_SERVER: graphql
+    expose:
+      - 3000
+    ports:
+      - 3000:3000
+    links:
+      - graphql
     networks:
       - psql-pgql
 networks:
