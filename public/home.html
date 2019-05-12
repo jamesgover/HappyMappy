@@ -140,13 +140,14 @@
                                 }),
                                 text: new ol.style.Text({
                                     font: '12px Calibri,sans-serif',
-                                    fill: new ol.style.Fill({ color: '#000000' }),
+                                    fill: new ol.style.Fill({ color: '#3399CC' }),
                                     stroke: new ol.style.Stroke({
                                         color: '#ffffff', width: 3
                                     }),
                                     // get the text from the feature - `this` is ol.Feature
                                     // and show only under certain resolution
-                                    text: map.getView().getZoom() > 3 ? feature.get("description") : ''
+                                    text: map.getView().getZoom() > 3 ? (map.getView().getZoom() > 5 ?
+                                            feature.get("ips") : feature.get("density")) : ''
                                 })
                             })
                         ];
@@ -256,9 +257,8 @@
                         attributions: 'Flight data by james',
                         loader: function() {
                             //alert("A");
-                            const transactionData = [[[127,23],[0,0]],[[17,3],[-122.0838, 37.386]],[[17,23],[9,9]]];//TODO get flight data
+                            const transactionData = [[[127,23],[0,0]],[[17,3],[-122.0838, 37.386]],[[17,23],[9,9]]];//TODO get connection data
                             for (var i = 0; i < transactionData.length; i++) {
-                                // TODO implement the IP -> Location
                                 var flight = transactionData[i];
                                 var from = flight[0];
                                 var to = flight[1];
@@ -279,8 +279,7 @@
                                 //alert("end")
                             }
 
-                            const nodeData = [[127,23],[0,0],[17,3],[-122.0838, 37.386],[17,23],[9,9]];//TODO get flight data
-
+                            const nodeData = [[127,23],[0,0],[17,3],[-122.0838, 37.386],[17,23],[9,9]];//TODO get node data
                             // TODO create a LongLat -> number of nodes dictionary
                             for (var i = 0; i < nodeData.length; i++) {
                                 // TODO implement the IP -> Location
@@ -291,7 +290,8 @@
                                 var pointFeature = new ol.Feature({
                                     geometry: point
                                 });
-                                pointFeature.set('description', "happy");//TODO happy -> how many nodes (IP?)
+                                pointFeature.set('density', "happy");//TODO happy -> how many nodes (IP?)
+                                pointFeature.set('ips', "lol");
                                 pointFeature.setStyle(pointStyle);
                                 // add the feature
                                 lineSource.addFeature(pointFeature);
