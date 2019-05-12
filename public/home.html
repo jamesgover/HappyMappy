@@ -128,6 +128,29 @@
                             width: 2
                         })
                     });
+                    function pointStyle(feature) {
+                        return [
+                            new ol.style.Style({
+                                fill: new ol.style.Fill({
+                                    color: 'rgba(244,244,255,0.4)'
+                                }),
+                                stroke: new ol.style.Stroke({
+                                    color: '#3399CC',
+                                    width: 1.25
+                                }),
+                                text: new ol.style.Text({
+                                    font: '12px Calibri,sans-serif',
+                                    fill: new ol.style.Fill({ color: '#000000' }),
+                                    stroke: new ol.style.Stroke({
+                                        color: '#ffffff', width: 3
+                                    }),
+                                    // get the text from the feature - `this` is ol.Feature
+                                    // and show only under certain resolution
+                                    text: map.getView().getZoom() > 3 ? feature.get("description") : ''
+                                })
+                            })
+                        ];
+                    }
                     var style_blue = new ol.style.Style({
                         stroke: new ol.style.Stroke({
                             color: '#3f73ce',
@@ -235,6 +258,7 @@
                             //alert("A");
                             const transactionData = [[[127,23],[0,0]],[[17,3],[-122.0838, 37.386]],[[17,23],[9,9]]];//TODO get flight data
                             for (var i = 0; i < transactionData.length; i++) {
+                                // TODO implement the IP -> Location
                                 var flight = transactionData[i];
                                 var from = flight[0];
                                 var to = flight[1];
@@ -256,7 +280,10 @@
                             }
 
                             const nodeData = [[127,23],[0,0],[17,3],[-122.0838, 37.386],[17,23],[9,9]];//TODO get flight data
+
+                            // TODO create a LongLat -> number of nodes dictionary
                             for (var i = 0; i < nodeData.length; i++) {
+                                // TODO implement the IP -> Location
                                 var node = nodeData[i];
                                 //alert("B");
                                 var point = new ol.geom.Circle(node, 1);
@@ -264,10 +291,10 @@
                                 var pointFeature = new ol.Feature({
                                     geometry: point
                                 });
+                                pointFeature.set('description', "happy");//TODO happy -> how many nodes (IP?)
+                                pointFeature.setStyle(pointStyle);
                                 // add the feature
                                 lineSource.addFeature(pointFeature);
-                                //alert(lineSource.getFeatures());
-                                //alert("end")
                             }
                         },
                     });
