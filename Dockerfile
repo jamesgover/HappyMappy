@@ -4,7 +4,8 @@ FROM node:10-alpine
 RUN mkdir -p /app/node_modules && chown -R node:node /app
 
 # Copy application over
-COPY --chown=node:node . /app
+COPY . /app
+RUN chown -R node:node /app
 
 # Install node dependancies
 USER node

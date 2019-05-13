@@ -12,12 +12,32 @@ const query = `{
   allEthereumconnections {
     nodes {
       ethereumnodeByNeighbour {
-        lat
-        long
+        ethereumlocationByLoc {
+          lat
+          long
+        }
       }
       ethereumnodeByNode {
-        lat
-        long
+        ethereumlocationByLoc {
+          lat
+          long
+        }
+      }
+      distance
+    }
+  }
+  
+  allEthereumlocations {
+    nodes {
+      lat
+      long
+      density
+      name
+      ethereumnodesByLoc {
+        nodes {
+          id
+          ip
+        }
       }
     }
   }
@@ -31,8 +51,8 @@ router.get('/', function(req, res, next) {
     let result = [];
     for (let d in data) {
       let item = data[d];
-      let start = item['ethereumnodeByNeighbour'];
-      let end = item['ethereumnodeByNode'];
+      let start = item['ethereumnodeByNode']['ethereumlocationByLoc'];
+      let end = item['ethereumnodeByNeighbour']['ethereumlocationByLoc'];
       result.push([[start['lat'], start['long']], [end['lat'], end['long']]])
     }
     console.log(result);
