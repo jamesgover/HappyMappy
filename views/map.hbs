@@ -378,22 +378,24 @@
                     /*
 						for finding the nearest node to a click
                     */
-                    function get_nearest_node(list_of_nodes, selected_point){ //TODO format
+                    function get_nearest_node(selected_point) {
+                        var list_of_nodes = data['allEthereumlocations']['nodes'];
+                        let node = list_of_nodes[0];
                         var nearest = list_of_nodes[0];
-                        var current_min = euclidian_distance_comparison(selected_point, list_of_nodes[0]);
+                        var current_min = euclidian_distance_comparison(selected_point, [node['long'], node['lat']]);
                         var new_distance;
 
-                        for (i = 1; i < list_of_nodes.length; i++){
-                            new_distance = euclidian_distance_comparison(selected_point, list_of_nodes[i]);
+                        for (var i = 1; i < list_of_nodes.length; i++){
+                            node = list_of_nodes[1];
+                            new_distance = euclidian_distance_comparison(selected_point, [node['long'], node['lat']]);
 
-                            if ( current_min > new_distance){
+                            if (current_min > new_distance) {
                                 nearest = list_of_nodes[i];
                                 current_min = new_distance;
-                                continue;
                             }
 
                         }
-
+                        return nearest;//this is a node instance
                     }
 
 

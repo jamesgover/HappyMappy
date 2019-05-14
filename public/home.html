@@ -167,7 +167,7 @@
                                     // get the text from the feature - `this` is ol.Feature
                                     // and show only under certain resolution
                                     text: map.getView().getZoom() > 3 ? (map.getView().getZoom() > 5 ?
-                                            feature.get("ips") : feature.get("density")) : ''
+                                        feature.get("ips") : feature.get("density")) : ''
                                 })
                             })
                         ];
@@ -285,14 +285,146 @@
                         element: document.getElementById('brisbane')
                     });
                     map.addOverlay(brisbane);
-                    let data = {{data}};
+                    let data = {
+                        "allEthereumconnections": {
+                            "nodes": [
+                                {
+                                    "ethereumnodeByNeighbour": {
+                                        "ethereumlocationByLoc": {
+                                            "lat": -27.4930309,
+                                            "long": 152.981343
+                                        }
+                                    },
+                                    "ethereumnodeByNode": {
+                                        "ethereumlocationByLoc": {
+                                            "lat": -27.504987,
+                                            "long": 152.978442
+                                        }
+                                    },
+                                    "distance": 5
+                                },
+                                {
+                                    "ethereumnodeByNeighbour": {
+                                        "ethereumlocationByLoc": {
+                                            "lat": -27.504987,
+                                            "long": 152.978442
+                                        }
+                                    },
+                                    "ethereumnodeByNode": {
+                                        "ethereumlocationByLoc": {
+                                            "lat": -27.495613,
+                                            "long": 152.978395
+                                        }
+                                    },
+                                    "distance": 10
+                                },
+                                {
+                                    "ethereumnodeByNeighbour": {
+                                        "ethereumlocationByLoc": {
+                                            "lat": -27.495613,
+                                            "long": 152.978395
+                                        }
+                                    },
+                                    "ethereumnodeByNode": {
+                                        "ethereumlocationByLoc": {
+                                            "lat": -27.4930309,
+                                            "long": 152.981343
+                                        }
+                                    },
+                                    "distance": 4
+                                },
+                                {
+                                    "ethereumnodeByNeighbour": {
+                                        "ethereumlocationByLoc": {
+                                            "lat": -27.500194,
+                                            "long": 153.015046
+                                        }
+                                    },
+                                    "ethereumnodeByNode": {
+                                        "ethereumlocationByLoc": {
+                                            "lat": -27.495613,
+                                            "long": 152.978395
+                                        }
+                                    },
+                                    "distance": 20
+                                }
+                            ]
+                        },
+                        "allEthereumlocations": {
+                            "nodes": [
+                                {
+                                    "lat": -27.4930309,
+                                    "long": 152.981343,
+                                    "density": 1,
+                                    "name": "A place",
+                                    "ethereumnodesByLoc": {
+                                        "nodes": [
+                                            {
+                                                "id": "id1",
+                                                "ip": "120.30.12.23"
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "lat": -27.504987,
+                                    "long": 152.978442,
+                                    "density": 1,
+                                    "name": "A place 2",
+                                    "ethereumnodesByLoc": {
+                                        "nodes": [
+                                            {
+                                                "id": "id2",
+                                                "ip": "32.3.12.45"
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "lat": -27.495613,
+                                    "long": 152.978395,
+                                    "density": 1,
+                                    "name": "Another place",
+                                    "ethereumnodesByLoc": {
+                                        "nodes": [
+                                            {
+                                                "id": "id3",
+                                                "ip": "45.30.2.23"
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "lat": -27.500194,
+                                    "long": 153.015046,
+                                    "density": 2,
+                                    "name": "One more place",
+                                    "ethereumnodesByLoc": {
+                                        "nodes": [
+                                            {
+                                                "id": "id4",
+                                                "ip": "120.34.5.23"
+                                            },
+                                            {
+                                                "id": "id5",
+                                                "ip": "12.30.12.23"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                    // alert("A");
+                    // alert(data["allEthereumconnections"]['nodes'][0]['ethereumnodeByNeighbour']['ethereumlocationByLoc']['lat']);
+                    // alert("A");
                     var lineSource = new ol.source.Vector( {
                         wrapX: false,
                         attributions: 'Flight data by james',
                         loader: function() {
                             //alert("A");
 
-                            const transactionData = data["allEthereumconnections"];//[[[127,23],[0,0]],[[17,3],[-122.0838, 37.386]],[[17,23],[9,9]]];//TODO get connection data
+                            const transactionData = data["allEthereumconnections"]['nodes'];//[[[127,23],[0,0]],[[17,3],[-122.0838, 37.386]],[[17,23],[9,9]]];//TODO get connection data
                             for (var i = 0; i < transactionData.length; i++) {
                                 var node = transactionData[i];
                                 var from = node['ethereumnodeByNeighbour']['ethereumlocationByLoc'];
@@ -308,17 +440,17 @@
                                 var feature = new ol.Feature({
                                     geometry: line
                                 });
-                                feature.set('distance', node["distance"]);
+                                feature.set('distance', ""); //node["distance"]);
                                 feature.setStyle(lineStyle);
                                 lineSource.addFeature(feature);
                             }
-
                             const nodeData = data["allEthereumlocations"]['nodes'];//[[127,23],[0,0],[17,3],[-122.0838, 37.386],[17,23],[9,9]];//TODO get node data
                             // created a LongLat -> number of nodes dictionary
                             for (var i = 0; i < nodeData.length; i++) {
                                 // using previous IP -> Location mapping
                                 var node = nodeData[i];
-                                var loc = [node['long'],node['lat']];
+                                var loc = [node['long'], node['lat']];
+                                //alert(loc);
                                 //alert("B");
                                 var point = new ol.geom.Circle(loc, 1);
                                 point.transform('EPSG:4326', 'EPSG:3857');
@@ -326,10 +458,12 @@
                                     geometry: point
                                 });
                                 pointFeature.set('density', node["name"] + ":" + node["density"]);
-                                pointFeature.set('ips', node['nodes']["ip"]);
+                                pointFeature.set('ips', "ip");//node['nodes']["ip"]);
                                 pointFeature.setStyle(pointStyle);
                                 // add the feature
                                 lineSource.addFeature(pointFeature);
+
+                                //alert("C");
                             }
                         },
                     });
@@ -367,31 +501,31 @@
                     	because this is only for comparisons this omitts the square root
                     */
                     function euclidian_distance_comparison(node1, node2){
-                    	return Math.pow( (node1[0]-node2[0]), 2) + Math.pow( (node[1]-node2[1]), 2);
+                        return Math.pow( (node1[0]-node2[0]), 2) + Math.pow( (node[1]-node2[1]), 2);
                     }
 
                     /*
-						for finding the nearest node to a click 
+						for finding the nearest node to a click
                     */
                     function get_nearest_node(list_of_nodes, selected_point){ //TODO format
-                    	var nearest = list_of_nodes[0];
-                    	var current_min = euclidian_distance_comparison(selected_point, list_of_nodes[0]);
-                    	var new_distance;
+                        var nearest = list_of_nodes[0];
+                        var current_min = euclidian_distance_comparison(selected_point, list_of_nodes[0]);
+                        var new_distance;
 
-                    	for (i = 1; i < list_of_nodes.length; i++){
-                    		new_distance = euclidian_distance_comparison(selected_point, list_of_nodes[i]);
+                        for (i = 1; i < list_of_nodes.length; i++){
+                            new_distance = euclidian_distance_comparison(selected_point, list_of_nodes[i]);
 
-                    		if ( current_min > new_distance){
-                    			nearest = list_of_nodes[i];
-                    			current_min = new_distance;
-                    			continue;
-                    		}
+                            if ( current_min > new_distance){
+                                nearest = list_of_nodes[i];
+                                current_min = new_distance;
+                                continue;
+                            }
 
-                    	}
+                        }
 
                     }
 
-                    
+
 
                 </script>
             </div>
