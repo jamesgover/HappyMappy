@@ -285,48 +285,48 @@
                         element: document.getElementById('brisbane')
                     });
                     map.addOverlay(brisbane);
-
+                    let data = {{data}};
                     var lineSource = new ol.source.Vector( {
                         wrapX: false,
                         attributions: 'Flight data by james',
                         loader: function() {
                             //alert("A");
-                            const transactionData = [[[127,23],[0,0]],[[17,3],[-122.0838, 37.386]],[[17,23],[9,9]]];//TODO get connection data
+
+                            const transactionData = data["allEthereumconnections"];//[[[127,23],[0,0]],[[17,3],[-122.0838, 37.386]],[[17,23],[9,9]]];//TODO get connection data
                             for (var i = 0; i < transactionData.length; i++) {
-                                var flight = transactionData[i];
-                                var from = flight[0];
-                                var to = flight[1];
+                                var node = transactionData[i];
+                                var from = node['ethereumnodeByNeighbour']['ethereumlocationByLoc'];
+                                var to = node['ethereumnodeByNode']['ethereumlocationByLoc'];
                                 //alert("B");
                                 // create an arc circle between the two locations
                                 var arcGenerator = new arc.GreatCircle(
-                                    {x: from[0], y: from[1]},
-                                    {x: to[0], y: to[1]});
+                                    {x: from['long'], y: from['lat']},
+                                    {x: to['long'], y: to['lat']});
                                 var arcLine = arcGenerator.Arc(100, {offset: 10});
                                 var line = new ol.geom.LineString(arcLine.geometries[0].coords);
                                 line.transform('EPSG:4326', 'EPSG:3857');
                                 var feature = new ol.Feature({
                                     geometry: line
                                 });
-                                feature.set('distance', "node[\"distance\"]");
-                                feature.setStyle(lineStyle)
+                                feature.set('distance', node["distance"]);
+                                feature.setStyle(lineStyle);
                                 lineSource.addFeature(feature);
-                                //alert(lineSource.getFeatures());
-                                //alert("end")
                             }
 
-                            const nodeData = [[127,23],[0,0],[17,3],[-122.0838, 37.386],[17,23],[9,9]];//TODO get node data
-                            // TODO create a LongLat -> number of nodes dictionary
+                            const nodeData = data["allEthereumlocations"]['nodes'];//[[127,23],[0,0],[17,3],[-122.0838, 37.386],[17,23],[9,9]];//TODO get node data
+                            // created a LongLat -> number of nodes dictionary
                             for (var i = 0; i < nodeData.length; i++) {
-                                // TODO implement the IP -> Location
+                                // using previous IP -> Location mapping
                                 var node = nodeData[i];
+                                var loc = [node['long'],node['lat']];
                                 //alert("B");
-                                var point = new ol.geom.Circle(node, 1);
+                                var point = new ol.geom.Circle(loc, 1);
                                 point.transform('EPSG:4326', 'EPSG:3857');
                                 var pointFeature = new ol.Feature({
                                     geometry: point
                                 });
-                                pointFeature.set('density', "node[\"density\"]");//TODO happy -> how many nodes (IP?)
-                                pointFeature.set('ips', "node[\"ips\"]");
+                                pointFeature.set('density', node["name"] + ":" + node["density"]);
+                                pointFeature.set('ips', node['nodes']["ip"]);
                                 pointFeature.setStyle(pointStyle);
                                 // add the feature
                                 lineSource.addFeature(pointFeature);
@@ -373,7 +373,7 @@
                     /*
 						for finding the nearest node to a click 
                     */
-                    function get_nearest_node(list_of_nodes, selected_point){
+                    function get_nearest_node(list_of_nodes, selected_point){ //TODO format
                     	var nearest = list_of_nodes[0];
                     	var current_min = euclidian_distance_comparison(selected_point, list_of_nodes[0]);
                     	var new_distance;

@@ -29,10 +29,10 @@
     <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
     <style>
         #marker {
-            width: 20px;
-            height: 20px;
+            width: 10px;
+            height: 10px;
             border: 1px solid #088;
-            border-radius: 10px;
+            border-radius: 5px;
             background-color: #0FF;
             opacity: 0.5;
         }
@@ -43,9 +43,47 @@
             font-weight: bold;
             text-shadow: black 0.1em 0.1em 0.2em;
         }
-
-        .popover-content {
-            min-width: 180px;
+        .ol-popup {
+            position: absolute;
+            background-color: white;
+            -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+            filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #cccccc;
+            bottom: 12px;
+            left: -50px;
+            min-width: 280px;
+        }
+        .ol-popup:after, .ol-popup:before {
+            top: 100%;
+            border: solid transparent;
+            content: " ";
+            height: 0;
+            width: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+        .ol-popup:after {
+            border-top-color: white;
+            border-width: 10px;
+            left: 48px;
+            margin-left: -10px;
+        }
+        .ol-popup:before {
+            border-top-color: #cccccc;
+            border-width: 11px;
+            left: 48px;
+            margin-left: -11px;
+        }
+        .ol-popup-closer {
+            text-decoration: none;
+            position: absolute;
+            top: 2px;
+            right: 8px;
+        }
+        .ol-popup-closer:after {
+            content: "X";
         }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -54,11 +92,11 @@
 
 <div id="page panel" class="panel panel-default">
     <div class="panel-body">
-        <h2>My Map</h2>
+        <h2>Happy Mappy</h2>
 
         <input class="ip" value="8.8.8.8">
         <button class="send">Go</button>
-        <button class="mapper">map</button>
+        <!--<button class="mapper">map</button>-->
         <br><br>
         <span class="city"></span>,
         <span class="country"></span>,
@@ -71,29 +109,125 @@
             </div>
             <div class="panel-body">
                 <div id="map" class="map"></div><!-- show map -->
+                <div id="popup" class="ol-popup">
+                    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                    <div id="popup-content"></div>
+                </div>
                 <div style="display: none;">
                     <!-- Clickable label for brisbane -->
                     <a class="overlay" id="brisbane" target="_blank" href="http://en.wikipedia.org/wiki/brisbane">brisbane</a>
                     <div id="marker" title="Marker"></div>
                     <!-- Popup -->
-                    <div id="popup" title="Welcome to OpenLayers"></div>
+                    <div id="popup_place" title="Welcome to OpenLayers"></div>
                 </div>
 
                 <script type="text/javascript">
                     var style = new ol.style.Style({
                         stroke: new ol.style.Stroke({
-                            color: '#EAE911',
+                            color: '#a2da37',
                             width: 2
                         })
                     });
-                    //works
-                    var layer = new ol.layer.Tile({
-                        source: new ol.source.OSM()
-                        // source: new ol.source.Stamen({ layer: 'toner'})
+                    function lineStyle(feature) {
+                        return [
+                            new ol.style.Style({
+                                stroke: new ol.style.Stroke({
+                                    color: '#a2da37',
+                                    width: 1.25
+                                }),
+                                text: new ol.style.Text({
+                                    font: '12px Calibri,sans-serif',
+                                    fill: new ol.style.Fill({ color: '#55721d'}),
+                                    stroke: new ol.style.Stroke({
+                                        color: '#ffffff', width: 3
+                                    }),
+                                    // get the text from the feature - `this` is ol.Feature
+                                    // and show only under certain resolution
+                                    text: map.getView().getZoom() > 3 ? feature.get("distance") : ''
+                                })
+                            })
+                        ];
+                    }
+                    function pointStyle(feature) {
+                        return [
+                            new ol.style.Style({
+                                fill: new ol.style.Fill({
+                                    color: 'rgba(244,244,255,0.4)'
+                                }),
+                                stroke: new ol.style.Stroke({
+                                    color: '#3399CC',
+                                    width: 1.25
+                                }),
+                                text: new ol.style.Text({
+                                    font: '12px Calibri,sans-serif',
+                                    fill: new ol.style.Fill({ color: '#3399CC' }),
+                                    stroke: new ol.style.Stroke({
+                                        color: '#ffffff', width: 3
+                                    }),
+                                    // get the text from the feature - `this` is ol.Feature
+                                    // and show only under certain resolution
+                                    text: map.getView().getZoom() > 3 ? (map.getView().getZoom() > 5 ?
+                                            feature.get("ips") : feature.get("density")) : ''
+                                })
+                            })
+                        ];
+                    }
+                    var style_blue = new ol.style.Style({
+                        stroke: new ol.style.Stroke({
+                            color: '#3f73ce',
+                            width: 2
+                        })
                     });
+                    /**
+                     * Elements that make up the popup.
+                     */
+                    var container = document.getElementById('popup');
+                    var content = document.getElementById('popup-content');
+                    var closer = document.getElementById('popup-closer');
+                    /**
+                     * Create an overlay to anchor the popup to the map.
+                     */
+                    var overlay = new ol.Overlay({
+                        element: container,
+                        autoPan: true,
+                        wrapX: false,
+                        autoPanAnimation: {
+                            duration: 250
+                        }
+                    });
+                    /**
+                     * Add a click handler to hide the popup.
+                     * @return {boolean} Don't follow the href.
+                     */
+                    closer.onclick = function() {
+                        overlay.setPosition(undefined);
+                        closer.blur();
+                        return false;
+                    };
+                    function transform(extent) {
+                        return ol.proj.transformExtent(extent, 'EPSG:4326', 'EPSG:3857');
+                    }
+                    var maxExtent = transform([-179.999, -89.999, 179.999, 89.999]);
+                    var layer = new ol.layer.Tile({
+                        extent: maxExtent,
+                        wrapDateLine: false,
+                        wrapX: false,
+                        source: new ol.source.OSM()
+                    });
+                    var restrictiveOverlay = new ol.layer.Tile({
+                        source: new ol.source.TileJSON({
+                            url: 'https://api.tiles.mapbox.com/v3/mapbox.world-black.json?secure',
+                            crossOrigin: 'anonymous'
+                        })
+                    });
+                    /**
+                     * Create the map.
+                     */
                     var map = new ol.Map({
                         target: 'map',
+                        overlays: [overlay, ],
                         layers: [
+                            restrictiveOverlay,
                             layer
                         ],
                         view: new ol.View({
@@ -101,9 +235,43 @@
                             zoom: 2.4
                         })
                     });
+                    /**
+                     * Add a click handler to the map to render the popup.
+                     */
+                    map.on('singleclick', function(evt) {
+                        var coordinate = evt.coordinate;
+                        var hdms = ol.coordinate.toStringHDMS(ol.proj.toLonLat(coordinate));
+                        // TODO nearest = get_nearest_node(hdms)
+
+                        var ip = "pl.ac.ce.oo";// TODO ip = nearest['IP']
+                        var id = "placeholder" ; // TODO id = nearest['id']
+                        var long = 135;  // TODO longLat = nearest['LonLat']
+                        var lat = 45;
+                        document.getElementById('brisbane').innerText=id;
+                        var pos = ol.proj.fromLonLat([long, lat]);
+                        // brisbane marker
+                        var marker = new ol.Overlay({
+                            position: pos,
+                            positioning: 'center-center',
+                            element: document.getElementById('marker'),
+                            stopEvent: false
+                        });
+                        map.addOverlay(marker);
+                        // brisbane label
+                        var brisbane = new ol.Overlay({
+                            position: pos,
+                            element: document.getElementById('brisbane')
+                        });
+                        map.addOverlay(brisbane);
+                        content.innerHTML = '<p>You clicked here:</p><code>' + hdms +
+                                '</code><p>The nearest node is:</p><code>' + "ip: " + ip + '</code><p></p><code>' +
+                                "public key: " + id + '</code><p></p><code>' + "longLat: " +
+                                long + "," + lat + '</code>';
+                        overlay.setPosition(coordinate);
+                    });
 
                     var pos = ol.proj.fromLonLat([153.3725, -27.4]);
-                    // brisbane marker
+
                     var marker = new ol.Overlay({
                         position: pos,
                         positioning: 'center-center',
@@ -117,93 +285,118 @@
                         element: document.getElementById('brisbane')
                     });
                     map.addOverlay(brisbane);
-
-                    // Popup showing the position the user clicked
-                    var popup = new ol.Overlay({
-                        element: document.getElementById('popup')
-                    });
-                    map.addOverlay(popup);
-
+                    let data = {{data}};
+                    // alert("A");
+                    // alert(data["allEthereumconnections"]['nodes'][0]['ethereumnodeByNeighbour']['ethereumlocationByLoc']['lat']);
+                    // alert("A");
                     var lineSource = new ol.source.Vector( {
                         wrapX: false,
                         attributions: 'Flight data by james',
                         loader: function() {
                             //alert("A");
-                            //const flightsData = [[[127,23],[0,0]],[[17,3],[54,23]],[[17,23],[9,9]]];//TODO get flight data
-                            //TODO: Fix this literal nightmare of a data conversion
-                            let data = {{data}};
-                            let flightsData = [{{#each locationConnections }}[{{#each this }}[{{#each this }}{{this}},{{/each}}],{{/each}}],{{/each}}];
-                            for (var i = 0; i < flightsData.length; i++) {
-                                var flight = flightsData[i];
-                                var from = flight[0];
-                                var to = flight[1];
+
+                            const transactionData = data["allEthereumconnections"]['nodes'];//[[[127,23],[0,0]],[[17,3],[-122.0838, 37.386]],[[17,23],[9,9]]];//TODO get connection data
+                            for (var i = 0; i < transactionData.length; i++) {
+                                var node = transactionData[i];
+                                var from = node['ethereumnodeByNeighbour']['ethereumlocationByLoc'];
+                                var to = node['ethereumnodeByNode']['ethereumlocationByLoc'];
                                 //alert("B");
                                 // create an arc circle between the two locations
                                 var arcGenerator = new arc.GreatCircle(
-                                        {x: from[1], y: from[0]},
-                                        {x: to[1], y: to[0]});
+                                        {x: from['long'], y: from['lat']},
+                                        {x: to['long'], y: to['lat']});
                                 var arcLine = arcGenerator.Arc(100, {offset: 10});
                                 var line = new ol.geom.LineString(arcLine.geometries[0].coords);
                                 line.transform('EPSG:4326', 'EPSG:3857');
                                 var feature = new ol.Feature({
                                     geometry: line
                                 });
-                                // add the feature
+                                feature.set('distance', ""); //node["distance"]);
+                                feature.setStyle(lineStyle);
                                 lineSource.addFeature(feature);
-                                //alert(lineSource.getFeatures());
-                                //alert("end")
                             }
-                            //map.on('precompose',animateLines);
-                            //map.on('postcompose', animateFlights);
-                            //map.on('render', animateFlights);
-                            //map.on('rendercomplete', animateFlights);
+                            const nodeData = data["allEthereumlocations"]['nodes'];//[[127,23],[0,0],[17,3],[-122.0838, 37.386],[17,23],[9,9]];//TODO get node data
+                            // created a LongLat -> number of nodes dictionary
+                            for (var i = 0; i < nodeData.length; i++) {
+                                // using previous IP -> Location mapping
+                                var node = nodeData[i];
+                                var loc = [node['long'], node['lat']];
+                                //alert(loc);
+                                //alert("B");
+                                var point = new ol.geom.Circle(loc, 1);
+                                point.transform('EPSG:4326', 'EPSG:3857');
+                                var pointFeature = new ol.Feature({
+                                    geometry: point
+                                });
+                                pointFeature.set('density', node["name"] + ":" + node["density"]);
+                                pointFeature.set('ips', "ip");//node['nodes']["ip"]);
+                                pointFeature.setStyle(pointStyle);
+                                // add the feature
+                                lineSource.addFeature(pointFeature);
+
+                                //alert("C");
+                            }
                         },
                     });
-                    //alert("hi");
+
                     var linesLayer = new ol.layer.Vector({
                         source: lineSource,
                         style: function(feature) {
-                            // if the animation is still active for a feature, do not
-                            // render the feature with the layer style
-                            return style;
+                            if (feature.getGeometry() instanceof ol.geom.Circle) {
+                                return style_blue;
+                            } else {
+                                return style;
+                            }
                         }
                     });
                     function add_arcs() {
                         var features = lineSource.getFeatures();
                         for (var i = 0; i < features.length; i++) {
                             var feature = features[i];
-                            var coords = feature.getGeometry().getCoordinates();
-                            var currentLine = new LineString(coords);
-                            linesLayer.drawGeometry(currentLine);
+                            if (feature.getGeometry() instanceof ol.geom.Circle){
+                                var coordsP = feature.getGeometry().getCoordinates();
+                                var currentPoint = new ol.geom.Circle(coordsP);
+                                linesLayer.drawGeometry(currentPoint);
+                            } else {
+                                var coords = feature.getGeometry().getCoordinates();
+                                var currentLine = new ol.geom.LineString(coords);
+                                linesLayer.drawGeometry(currentLine);
+                            }
                         }
                     }
                     add_arcs();
                     map.addLayer(linesLayer);
 
-                    //Dots
-                    var pointsPerMs = 0.1;
-                    function animateLines(event) {
-                        var vectorContext = event.vectorContext;
-                        var frameState = event.frameState;
-                        vectorContext.setStyle(style);
 
-                        var features = lineSource.getFeatures();
-                        //alert("features:" + features);
-                        for (var i = 0; i < features.length; i++) {
-                            var feature = features[i];
-                            //alert("feature:" + feature);
-                            var coords = feature.getGeometry().getCoordinates();
-                            //alert("coords:" + coords);
-                            var currentLine = new LineString(coords);
-
-                            // directly draw the line with the vector context
-                            vectorContext.drawGeometry(currentLine);
-                        }
-                        // tell OpenLayers to continue the animation
-                        map.render();
+                    /*
+                    	because this is only for comparisons this omitts the square root
+                    */
+                    function euclidian_distance_comparison(node1, node2){
+                        return Math.pow( (node1[0]-node2[0]), 2) + Math.pow( (node[1]-node2[1]), 2);
                     }
 
-                    //map.onclick(animateLines(event));//"postcompose", animateLines);
+                    /*
+						for finding the nearest node to a click
+                    */
+                    function get_nearest_node(list_of_nodes, selected_point){ //TODO format
+                        var nearest = list_of_nodes[0];
+                        var current_min = euclidian_distance_comparison(selected_point, list_of_nodes[0]);
+                        var new_distance;
+
+                        for (i = 1; i < list_of_nodes.length; i++){
+                            new_distance = euclidian_distance_comparison(selected_point, list_of_nodes[i]);
+
+                            if ( current_min > new_distance){
+                                nearest = list_of_nodes[i];
+                                current_min = new_distance;
+                                continue;
+                            }
+
+                        }
+
+                    }
+
+
 
                 </script>
             </div>
@@ -217,13 +410,9 @@ $('.send').on('click', function(){
         $('.country').text(data.country);
         $('.long').text(data.longitude);
         $('.lat').text(data.latitude);
-    });
-});
-$('.mapper').on('click', function(){
-    $.getJSON('https://ipapi.co/'+$('.ip').val()+'/json', function(data) {
         var lat = data.latitude;
         var long = data.longitude;
-        document.getElementById('brisbane').innerText=data.city
+        document.getElementById('brisbane').innerText=data.city;
         var pos = ol.proj.fromLonLat([long, lat]);
         // brisbane marker
         var marker = new ol.Overlay({
@@ -241,6 +430,7 @@ $('.mapper').on('click', function(){
         map.addOverlay(brisbane);
     });
 });
+
 </script>
 </body>
 </html>
