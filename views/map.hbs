@@ -240,14 +240,15 @@
                      */
                     map.on('singleclick', function(evt) {
                         var coordinate = evt.coordinate;
-                        var hdms = ol.coordinate.toStringHDMS(ol.proj.toLonLat(coordinate));
-                        // TODO nearest = get_nearest_node(hdms)
+                        var hdms = ol.proj.toLonLat(coordinate);
+                        var nearest = get_nearest_node(hdms);
 
-                        var ip = "pl.ac.ce.oo";// TODO ip = nearest['IP']
-                        var id = "placeholder" ; // TODO id = nearest['id']
-                        var long = 135;  // TODO longLat = nearest['LonLat']
-                        var lat = 45;
-                        document.getElementById('brisbane').innerText=id;
+                        var ip = nearest['ethereumnodesByLoc']['nodes'][0]['ip'];
+                        var id = nearest['ethereumnodesByLoc']['nodes'][0]['id'];
+                        var long = nearest['long'];
+                        var lat = nearest['lat'];
+                        var loc = nearest['name'];
+                        document.getElementById('brisbane').innerText=loc;
                         var pos = ol.proj.fromLonLat([long, lat]);
                         // brisbane marker
                         var marker = new ol.Overlay({
@@ -264,8 +265,8 @@
                         });
                         map.addOverlay(brisbane);
                         content.innerHTML = '<p>You clicked here:</p><code>' + hdms +
-                                '</code><p>The nearest node is:</p><code>' + "ip: " + ip + '</code><p></p><code>' +
-                                "public key: " + id + '</code><p></p><code>' + "longLat: " +
+                                '</code><p>The nearest node is:</p><code>' + loc + "\nan ip: " + ip + '</code><p></p><code>' +
+                                "a public key: " + id + '</code><p></p><code>' + "longLat: " +
                                 long + "," + lat + '</code>';
                         overlay.setPosition(coordinate);
                     });
@@ -286,21 +287,18 @@
                     });
                     map.addOverlay(brisbane);
                     let data = {{data}};
-                    // alert("A");
                     // alert(data["allEthereumconnections"]['nodes'][0]['ethereumnodeByNeighbour']['ethereumlocationByLoc']['lat']);
-                    // alert("A");
+
                     var lineSource = new ol.source.Vector( {
                         wrapX: false,
                         attributions: 'Flight data by james',
                         loader: function() {
-                            //alert("A");
 
                             const transactionData = data["allEthereumconnections"]['nodes'];//[[[127,23],[0,0]],[[17,3],[-122.0838, 37.386]],[[17,23],[9,9]]];//TODO get connection data
                             for (var i = 0; i < transactionData.length; i++) {
                                 var node = transactionData[i];
                                 var from = node['ethereumnodeByNeighbour']['ethereumlocationByLoc'];
                                 var to = node['ethereumnodeByNode']['ethereumlocationByLoc'];
-                                //alert("B");
                                 // create an arc circle between the two locations
                                 var arcGenerator = new arc.GreatCircle(
                                         {x: from['long'], y: from['lat']},
@@ -321,20 +319,16 @@
                                 // using previous IP -> Location mapping
                                 var node = nodeData[i];
                                 var loc = [node['long'], node['lat']];
-                                //alert(loc);
-                                //alert("B");
                                 var point = new ol.geom.Circle(loc, 1);
                                 point.transform('EPSG:4326', 'EPSG:3857');
                                 var pointFeature = new ol.Feature({
                                     geometry: point
                                 });
                                 pointFeature.set('density', node["name"] + ":" + node["density"]);
-                                pointFeature.set('ips', "ip");//node['nodes']["ip"]);
+                                pointFeature.set('ips', node["name"] + ":" + node["density"] +"\nAn IP:" + node['ethereumnodesByLoc']['nodes'][0]['ip']);//node['nodes']["ip"]);
                                 pointFeature.setStyle(pointStyle);
                                 // add the feature
                                 lineSource.addFeature(pointFeature);
-
-                                //alert("C");
                             }
                         },
                     });
@@ -372,7 +366,7 @@
                     	because this is only for comparisons this omitts the square root
                     */
                     function euclidian_distance_comparison(node1, node2){
-                        return Math.pow( (node1[0]-node2[0]), 2) + Math.pow( (node[1]-node2[1]), 2);
+                        return Math.pow( (node1[0]-node2[0]), 2) + Math.pow( (node1[1]-node2[1]), 2);
                     }
 
                     /*
@@ -385,8 +379,9 @@
                         var current_min = euclidian_distance_comparison(selected_point, [node['long'], node['lat']]);
                         var new_distance;
 
-                        for (var i = 1; i < list_of_nodes.length; i++){
+                        for (var i = 1; i < list_of_nodes.length; i++) {
                             node = list_of_nodes[1];
+                            //alert(selected_point +":"+ [node['long'], node['lat']]);
                             new_distance = euclidian_distance_comparison(selected_point, [node['long'], node['lat']]);
 
                             if (current_min > new_distance) {
@@ -395,11 +390,9 @@
                             }
 
                         }
+
                         return nearest;//this is a node instance
                     }
-
-
-
                 </script>
             </div>
         </div>
