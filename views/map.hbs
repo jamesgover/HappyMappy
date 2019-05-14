@@ -265,7 +265,8 @@
                         });
                         map.addOverlay(brisbane);
                         content.innerHTML = '<p>You clicked here:</p><code>' + hdms +
-                                '</code><p>The nearest node is:</p><code>' + loc + "\nan ip: " + ip + '</code><p></p><code>' +
+                                '</code><p>The nearest node is:</p><code>' + loc + '</code><p></p><code>' +
+                                "\nan ip: " + ip + '</code><p></p><code>' +
                                 "a public key: " + id + '</code><p></p><code>' + "longLat: " +
                                 long + "," + lat + '</code>';
                         overlay.setPosition(coordinate);
@@ -286,8 +287,8 @@
                         element: document.getElementById('brisbane')
                     });
                     map.addOverlay(brisbane);
-                    let data = {{data}};
-                    // alert(data["allEthereumconnections"]['nodes'][0]['ethereumnodeByNeighbour']['ethereumlocationByLoc']['lat']);
+                    let data ={{data}};
+                    //alert(data["allEthereumconnections"]['nodes'][0]['ethereumnodeByNeighbour']['ethereumlocationByLoc']['lat']);
 
                     var lineSource = new ol.source.Vector( {
                         wrapX: false,
@@ -313,6 +314,7 @@
                                 feature.setStyle(lineStyle);
                                 lineSource.addFeature(feature);
                             }
+                            alert("A");
                             const nodeData = data["allEthereumlocations"]['nodes'];//[[127,23],[0,0],[17,3],[-122.0838, 37.386],[17,23],[9,9]];//TODO get node data
                             // created a LongLat -> number of nodes dictionary
                             for (var i = 0; i < nodeData.length; i++) {
