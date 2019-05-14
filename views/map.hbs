@@ -294,8 +294,19 @@
                         wrapX: false,
                         attributions: 'Flight data by james',
                         loader: function() {
+                            let connections = data["allEthereumconnections"]["nodes"];
+                            let flightsData = [];
+                            for (let d in connections) {
+                                let item = connections[d];
+                                let start = item['ethereumnodeByNode']['ethereumlocationByLoc'];
+                                let end = item['ethereumnodeByNeighbour']['ethereumlocationByLoc'];
+                                if (start['lat'] === end['lat'] && start['long'] === end['long']) {
+                                  continue;
+                                }
+                                flightsData.push([[start['lat'], start['long']], [end['lat'], end['long']]])
+                            }
 
-                            const transactionData = data["allEthereumconnections"]['nodes'];//[[[127,23],[0,0]],[[17,3],[-122.0838, 37.386]],[[17,23],[9,9]]];//TODO get connection data
+                            const transactionData = flightsData;//[[[127,23],[0,0]],[[17,3],[-122.0838, 37.386]],[[17,23],[9,9]]];//TODO get connection data
                             for (var i = 0; i < transactionData.length; i++) {
                                 var node = transactionData[i];
                                 var from = node['ethereumnodeByNeighbour']['ethereumlocationByLoc'];
