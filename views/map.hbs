@@ -112,6 +112,7 @@
                 <div id="popup" class="ol-popup">
                     <a href="#" id="popup-closer" class="ol-popup-closer"></a>
                     <div id="popup-content"></div>
+                    <button class="show">Show</button>
                 </div>
                 <div style="display: none;">
                     <!-- Clickable label for brisbane -->
@@ -130,7 +131,7 @@
                     });
                     var hidden = new ol.style.Style({
                         stroke: new ol.style.Stroke({
-                            color: 'rgba(218,47,32,0.1)',
+                            color: 'rgba(168,252,0,0.01)',
                             width: 2
                         })
                     });
@@ -201,6 +202,7 @@
                             duration: 250
                         }
                     });
+                    var shown;
                     /**
                      * Add a click handler to hide the popup.
                      * @return {boolean} Don't follow the href.
@@ -208,6 +210,7 @@
                     closer.onclick = function() {
                         overlay.setPosition(undefined);
                         closer.blur();
+                        hideConnections(null);
                         return false;
                     };
                     function transform(extent) {
@@ -249,12 +252,11 @@
                         var hdms = ol.proj.toLonLat(coordinate);
                         var nearest = get_nearest_node(hdms);
 
-                        hide_layers("29.00974,-24.19436");
-
                         var ip = nearest['ethereumnodesByLoc']['nodes'][0]['ip'];
                         var id = nearest['ethereumnodesByLoc']['nodes'][0]['id'];
                         var long = nearest['long'];
                         var lat = nearest['lat'];
+                        shown = long + "," + lat;
                         var loc = nearest['name'];
                         document.getElementById('brisbane').innerText=loc;
                         var pos = ol.proj.fromLonLat([long, lat]);
@@ -390,12 +392,20 @@
                     add_arcs();
                     map.addLayer(linesLayer);
 
-                    function hide_layers(exclusion) {
-                        for (let k =0; k <lineFeatures.length; k++ ) {
-                            let f = lineFeatures[k];
-                            if (f.get('L1') === exclusion || f.get('L2') === exclusion){
-                            } else {
-                                f.setStyle(hidden);
+                    function hideConnections(exclusion) {
+                        if (exclusion === "" || exclusion === null) {
+                            for (let k = 0; k < lineFeatures.length; k++) {
+                                let f = lineFeatures[k];
+                                f.setStyle(lineStyle)
+                            }
+                        } else {
+                            for (let k = 0; k < lineFeatures.length; k++) {
+                                let f = lineFeatures[k];
+                                if (f.get('L1') === exclusion || f.get('L2') === exclusion) {
+                                    f.setStyle(lineStyle)
+                                } else {
+                                    f.setStyle(hidden);
+                                }
                             }
                         }
                     }
@@ -432,6 +442,12 @@
 
                         return nearest;//this is a node instance
                     }
+
+
+                    $('.show').on('click', function() {
+                        hideConnections(shown);
+                        //alert(shown);
+                    });
                 </script>
             </div>
         </div>
