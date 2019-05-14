@@ -242,6 +242,7 @@
                         var coordinate = evt.coordinate;
                         var hdms = ol.coordinate.toStringHDMS(ol.proj.toLonLat(coordinate));
                         // TODO nearest = get_nearest_node(hdms)
+
                         var ip = "pl.ac.ce.oo";// TODO ip = nearest['IP']
                         var id = "placeholder" ; // TODO id = nearest['id']
                         var long = 135;  // TODO longLat = nearest['LonLat']
@@ -362,6 +363,35 @@
                     map.addLayer(linesLayer);
 
 
+                    /*
+                    	because this is only for comparisons this omitts the square root
+                    */
+                    function euclidian_distance_comparison(node1, node2){
+                    	return Math.pow( (node1[0]-node2[0]), 2) + Math.pow( (node[1]-node2[1]), 2);
+                    }
+
+                    /*
+						for finding the nearest node to a click 
+                    */
+                    function get_nearest_node(list_of_nodes, selected_point){
+                    	var nearest = list_of_nodes[0];
+                    	var current_min = euclidian_distance_comparison(selected_point, list_of_nodes[0]);
+                    	var new_distance;
+
+                    	for (i = 1; i < list_of_nodes.length; i++){
+                    		new_distance = euclidian_distance_comparison(selected_point, list_of_nodes[i]);
+
+                    		if ( current_min > new_distance){
+                    			nearest = list_of_nodes[i];
+                    			current_min = new_distance;
+                    			continue;
+                    		}
+
+                    	}
+
+                    }
+
+                    
 
                 </script>
             </div>

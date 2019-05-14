@@ -1,5 +1,6 @@
 let express = require('express');
 let router = express.Router();
+let Handlebars = require('handlebars');
 
 let {request, GraphQLClient} = require('graphql-request');
 
@@ -47,10 +48,10 @@ const query = `{
 router.get('/', function(req, res, next) {
   client.request(query).then(data => {
     // TODO: Fix this data conversion weirdness plz
-    data = data["allEthereumconnections"]["nodes"];
+    let connections = data["allEthereumconnections"]["nodes"];
     let result = [];
-    for (let d in data) {
-      let item = data[d];
+    for (let d in connections) {
+      let item = connections[d];
       let start = item['ethereumnodeByNode']['ethereumlocationByLoc'];
       let end = item['ethereumnodeByNeighbour']['ethereumlocationByLoc'];
       result.push([[start['lat'], start['long']], [end['lat'], end['long']]])
@@ -58,7 +59,8 @@ router.get('/', function(req, res, next) {
     console.log(result);
     res.render('map', {
       title: 'Happy Mappy',
-      locationConnections: result
+      locationConnections: result,
+      data: new Handlebars.SafeString(JSON.stringify(data)),
     });
   }).catch(next);
 });

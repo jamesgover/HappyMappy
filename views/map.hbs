@@ -131,6 +131,7 @@
                             //alert("A");
                             //const flightsData = [[[127,23],[0,0]],[[17,3],[54,23]],[[17,23],[9,9]]];//TODO get flight data
                             //TODO: Fix this literal nightmare of a data conversion
+                            let data = {{data}};
                             let flightsData = [{{#each locationConnections }}[{{#each this }}[{{#each this }}{{this}},{{/each}}],{{/each}}],{{/each}}];
                             for (var i = 0; i < flightsData.length; i++) {
                                 var flight = flightsData[i];
