@@ -249,6 +249,8 @@
                         var hdms = ol.proj.toLonLat(coordinate);
                         var nearest = get_nearest_node(hdms);
 
+                        hide_layers("29.00974,-24.19436");
+
                         var ip = nearest['ethereumnodesByLoc']['nodes'][0]['ip'];
                         var id = nearest['ethereumnodesByLoc']['nodes'][0]['id'];
                         var long = nearest['long'];
@@ -294,6 +296,7 @@
                     });
                     map.addOverlay(brisbane);
                     let data = {{data}};
+                    var lineFeatures = [];
                     //alert(data["allEthereumconnections"]['nodes'][0]['ethereumnodeByNeighbour']['ethereumlocationByLoc']['lat']);
 
                     var lineSource = new ol.source.Vector( {
@@ -328,8 +331,10 @@
                                     geometry: line
                                 });
                                 feature.set('distance', ""); //node["distance"]);
-                                feature.set('hidden', "y");
+                                feature.set('L1', from['long'] +","+ from['lat']);
+                                feature.set('L2', from['to'] +","+ from['to']);
                                 feature.setStyle(lineStyle);
+                                lineFeatures.push(feature);
                                 lineSource.addFeature(feature);
                             }
                             const nodeData = data["allEthereumlocations"]['nodes'];//[[127,23],[0,0],[17,3],[-122.0838, 37.386],[17,23],[9,9]];//TODO get node data
@@ -358,7 +363,11 @@
                             if (feature.getGeometry() instanceof ol.geom.Circle) {
                                 return style_blue;
                             } else {
-                                return style;
+                                if (feature.get("hidden") === "y") {
+                                    return hidden;
+                                } else {
+                                    return style;
+                                }
 
                             }
                         }
@@ -380,6 +389,16 @@
                     }
                     add_arcs();
                     map.addLayer(linesLayer);
+
+                    function hide_layers(exclusion) {
+                        for (let k =0; k <lineFeatures.length; k++ ) {
+                            let f = lineFeatures[k];
+                            if (f.get('L1') === exclusion || f.get('L2') === exclusion){
+                            } else {
+                                f.setStyle(hidden);
+                            }
+                        }
+                    }
 
 
                     /*
