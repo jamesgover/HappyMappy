@@ -128,6 +128,12 @@
                             width: 2
                         })
                     });
+                    var hidden = new ol.style.Style({
+                        stroke: new ol.style.Stroke({
+                            color: 'rgba(218,47,32,0.1)',
+                            width: 2
+                        })
+                    });
                     function lineStyle(feature) {
                         return [
                             new ol.style.Style({
@@ -322,17 +328,17 @@
                                     geometry: line
                                 });
                                 feature.set('distance', ""); //node["distance"]);
+                                feature.set('hidden', "y");
                                 feature.setStyle(lineStyle);
                                 lineSource.addFeature(feature);
                             }
-                            alert("A");
                             const nodeData = data["allEthereumlocations"]['nodes'];//[[127,23],[0,0],[17,3],[-122.0838, 37.386],[17,23],[9,9]];//TODO get node data
                             // created a LongLat -> number of nodes dictionary
                             for (var i = 0; i < nodeData.length; i++) {
                                 // using previous IP -> Location mapping
                                 var node = nodeData[i];
                                 var loc = [node['long'], node['lat']];
-                                var point = new ol.geom.Circle(loc, 1);
+                                var point = new ol.geom.Circle(loc, .5);
                                 point.transform('EPSG:4326', 'EPSG:3857');
                                 var pointFeature = new ol.Feature({
                                     geometry: point
@@ -353,6 +359,7 @@
                                 return style_blue;
                             } else {
                                 return style;
+
                             }
                         }
                     });
@@ -379,7 +386,7 @@
                     	because this is only for comparisons this omitts the square root
                     */
                     function euclidian_distance_comparison(node1, node2){
-                        return Math.pow( (node1[0]-node2[0]), 2) + Math.pow( (node1[1]-node2[1]), 2);
+                        return Math.pow((node1[0]-node2[0]), 2) + Math.pow((node1[1]-node2[1]), 2);
                     }
 
                     /*
@@ -393,11 +400,11 @@
                         var new_distance;
 
                         for (var i = 1; i < list_of_nodes.length; i++) {
-                            node = list_of_nodes[1];
+                            node = list_of_nodes[i];
                             //alert(selected_point +":"+ [node['long'], node['lat']]);
                             new_distance = euclidian_distance_comparison(selected_point, [node['long'], node['lat']]);
 
-                            if (current_min > new_distance) {
+                            if (new_distance < current_min) {
                                 nearest = list_of_nodes[i];
                                 current_min = new_distance;
                             }
