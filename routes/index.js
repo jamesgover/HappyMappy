@@ -47,19 +47,8 @@ const query = `{
 /* GET home page. */
 router.get('/', function(req, res, next) {
   client.request(query).then(data => {
-    // TODO: Fix this data conversion weirdness plz
-    let connections = data["allEthereumconnections"]["nodes"];
-    let result = [];
-    for (let d in connections) {
-      let item = connections[d];
-      let start = item['ethereumnodeByNode']['ethereumlocationByLoc'];
-      let end = item['ethereumnodeByNeighbour']['ethereumlocationByLoc'];
-      result.push([[start['lat'], start['long']], [end['lat'], end['long']]])
-    }
-    console.log(result);
     res.render('map', {
       title: 'Happy Mappy',
-      locationConnections: result,
       data: new Handlebars.SafeString(JSON.stringify(data)),
     });
   }).catch(next);
