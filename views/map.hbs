@@ -287,7 +287,7 @@
                         element: document.getElementById('brisbane')
                     });
                     map.addOverlay(brisbane);
-                    let data ={{data}};
+                    let data = {{data}};
                     //alert(data["allEthereumconnections"]['nodes'][0]['ethereumnodeByNeighbour']['ethereumlocationByLoc']['lat']);
 
                     var lineSource = new ol.source.Vector( {
@@ -303,7 +303,7 @@
                                 if (start['lat'] === end['lat'] && start['long'] === end['long']) {
                                   continue;
                                 }
-                                flightsData.push([[start['lat'], start['long']], [end['lat'], end['long']]])
+                                flightsData.push(connections[d])
                             }
 
                             const transactionData = flightsData;//[[[127,23],[0,0]],[[17,3],[-122.0838, 37.386]],[[17,23],[9,9]]];//TODO get connection data
