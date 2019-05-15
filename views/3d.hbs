@@ -1,0 +1,34 @@
+<head>
+  <style> body { margin: 0; } </style>
+
+  <script src="https://unpkg.com/3d-force-graph@1.46.3/dist/3d-force-graph.min.js"></script>
+  <!--<script src="3d-force-graph.js"></script>-->
+</head>
+
+<body>
+  memes
+  <div id="3d-graph"></div>
+
+  <script>
+    let data = {{data}};
+    var ipaddrs = new Set();
+    var 
+
+    conns = data["allEthereumconnections"]["nodes"];
+
+    for(int i = 0; i < conns.length; i++) {
+        var conn = conns[i];
+        ipaddrs.add(conn["ethereumnodeByNode"["ip"]]);
+        
+
+        graph["nodes"]
+
+    }
+
+    const Graph = ForceGraph3D()
+      (document.getElementById('3d-graph'))
+        .graphData(graph)
+        .nodeLabel('ip')
+        .nodeAutoColorBy('group');
+  </script>
+</body>

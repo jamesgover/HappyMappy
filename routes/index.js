@@ -44,11 +44,60 @@ const query = `{
   }
 }`;
 
+const ipQuery = `{
+  allEthereumconnections {
+    nodes {
+      ethereumnodeByNode {
+        ip
+      }
+      ethereumnodeByNeighbour {
+        ip
+      }
+    }
+  }
+}`;
+
+const locQuery = `{
+  allEthereumlocations {
+    nodes {
+      loc
+      name
+    }
+  }
+  allEthereumnodes {
+    nodes {
+      nodeId
+      ip
+      loc
+    }
+  }
+}`;
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
   client.request(query).then(data => {
     res.render('map', {
       title: 'Happy Mappy',
+      data: new Handlebars.SafeString(JSON.stringify(data)),
+    });
+  }).catch(next);
+});
+
+/* 3D view yo */
+router.get('/3d', function(req, res, next) {
+  client.request(ipQuery).then(data => {
+    res.render('3d', {
+      title: 'Happy Mappy 3D',
+      data: new Handlebars.SafeString(JSON.stringify(data)),
+    });
+  }).catch(next);
+});
+
+/* Node view yo */
+router.get('/nodes', function(req, res, next) {
+  client.request(locQuery).then(data => {
+    res.render('nodes', {
+      title: 'Node List',
       data: new Handlebars.SafeString(JSON.stringify(data)),
     });
   }).catch(next);

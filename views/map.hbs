@@ -109,6 +109,15 @@
                 <h3 class="panel-title">Ethereum Network Map</h3>
             </div>
             <div class="panel-body">
+                <button class="show_all">Unhide all Connections</button>
+                <input type="button" onClick="openNew('/nodes')" value="Node List">
+                <input type="button" onClick="openNew('/3d')" value="Enter the 3rd Dimension">
+                <script type="text/javascript">
+                    function openNew(path) {
+                        window.open(path);
+                    }
+                </script>
+                <p></p>
                 <div id="map" class="map"></div><!-- show map -->
                 <div id="popup" class="ol-popup">
                     <a href="#" id="popup-closer" class="ol-popup-closer"></a>
@@ -323,6 +332,7 @@
                     });
                     map.addOverlay(brisbane);
                     let data = {{data}};
+                    console.log(data);
                     var lineFeatures = [];
                     //alert(data["allEthereumconnections"]['nodes'][0]['ethereumnodeByNeighbour']['ethereumlocationByLoc']['lat']);
 
@@ -359,7 +369,7 @@
                                 });
                                 feature.set('distance', ""); //node["distance"]);
                                 feature.set('L1', from['long'] +","+ from['lat']);
-                                feature.set('L2', from['to'] +","+ from['to']);
+                                feature.set('L2', to['long'] +","+ to['lat']);
                                 feature.setStyle(lineStyle);
                                 lineFeatures.push(feature);
                                 lineSource.addFeature(feature);
@@ -480,7 +490,6 @@
                 </script>
             </div>
         </div>
-        <button class="show_all">Unhide all Connections</button>
     </div>
 </div>
 <script> // handles the buttons atm
