@@ -135,6 +135,7 @@
                 </div>
 
                 <script type="text/javascript">
+                    console.log("A");
                     document.getElementById("show_all").disabled = true;
                     var style = new ol.style.Style({
                         stroke: new ol.style.Stroke({
@@ -217,6 +218,7 @@
                     });
                     var shown;
                     var loc;
+                    console.log("B");
                     /**
                      * Add a click handler to hide the popup.
                      * @return {boolean} Don't follow the href.
@@ -319,6 +321,7 @@
                                 "Public keys here: " + id + '</code><p></p>';
                         overlay.setPosition(pos);
                     });
+                    console.log("C");
 
                     var pos = ol.proj.fromLonLat([153.3725, -27.4]);
 
@@ -390,13 +393,18 @@
                                     geometry: point
                                 });
                                 pointFeature.set('density', node["name"] + ":" + node["density"]);
-                                pointFeature.set('ips', node["name"] + ":" + node["density"] +"\nAn IP:" + node['ethereumnodesByLoc']['nodes'][0]['ip']);//node['nodes']["ip"]);
+                                if(node['ethereumnodesByLoc']['nodes'].length == 0) {
+                                    pointFeature.set('ips', node["name"] + ":" + node["density"]);
+                                } else {
+                                    pointFeature.set('ips', node["name"] + ":" + node["density"] + "\n" + node['ethereumnodesByLoc']['nodes'][0]['ip'] + "...");
+                                }
                                 pointFeature.setStyle(pointStyle);
                                 // add the feature
                                 lineSource.addFeature(pointFeature);
                             }
                         },
                     });
+                    console.log("D");
 
                     var linesLayer = new ol.layer.Vector({
                         source: lineSource,
