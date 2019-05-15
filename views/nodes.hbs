@@ -46,7 +46,7 @@
 
     var params = getParams();
 
-    if(params.city === undefined && params.country === undefined && params.loc === undefined &&
+    if(params.city === undefined && params.country === undefined &&
       params.ip === undefined && params.id === undefined && params.port === undefined) {
       document.getElementById("showall").style.visibility = "hidden";
     }
@@ -74,13 +74,11 @@
         if(params.port != undefined && params.port != port) {
           return;
         }
-        if(params.city != undefined && params.city != city.replace(" ", "")) {
+        if(params.city != undefined && params.city != city.split(" ").join("")) {
+          console.log(city.split(" ").join(""))
           return;
         }
-        if(params.country != undefined && params.country != country.replace(" ", "")) {
-          return;
-        }
-        if(params.loc != undefined && params.loc != city.replace(" ", "") + "(" + country + ")") {
+        if(params.country != undefined && params.country != country) {
           return;
         }
 
@@ -96,7 +94,7 @@
 
         var cityHolder = document.createElement("a");
         cityHolder.style = "text-decoration: none;";
-        cityHolder.href = "/nodes?city=" + city.replace(" ", "") + "&country=" + country.replace(" ", "");
+        cityHolder.href = "/nodes?city=" + city.split(" ").join("") + "&country=" + country;
         cityHolder.appendChild(document.createTextNode(city));
         cityCell.appendChild(cityHolder);
 
