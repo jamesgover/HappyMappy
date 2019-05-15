@@ -156,7 +156,7 @@
                                     width: 1.25
                                 }),
                                 text: new ol.style.Text({
-                                    font: '12px Calibri,sans-serif',
+                                    font:  '12px Calibri,sans-serif',
                                     fill: new ol.style.Fill({ color: '#55721d'}),
                                     stroke: new ol.style.Stroke({
                                         color: '#ffffff', width: 3
@@ -184,8 +184,6 @@
                                     stroke: new ol.style.Stroke({
                                         color: '#ffffff', width: 3
                                     }),
-                                    // get the text from the feature - `this` is ol.Feature
-                                    // and show only under certain resolution
                                     text: map.getView().getZoom() > 3 ? (map.getView().getZoom() > 5 ?
                                             feature.get("ips") : feature.get("density")) : ''
                                 })
