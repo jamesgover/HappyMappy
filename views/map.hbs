@@ -109,9 +109,9 @@
                 <h3 class="panel-title">Ethereum Network Map</h3>
             </div>
             <div class="panel-body">
-                <button class="show_all">Unhide all Connections</button>
-                <input type="button" onClick="openNew('/nodes')" value="Node List">
+                <input type="button" onClick="openNew('/nodes')" value="View all Nodes">
                 <input type="button" onClick="openNew('/3d')" value="Enter the 3rd Dimension">
+                <button class="show_all" id="show_all">Unhide all Connections</button>
                 <script type="text/javascript">
                     function openNew(path) {
                         window.open(path);
@@ -122,7 +122,9 @@
                 <div id="popup" class="ol-popup">
                     <a href="#" id="popup-closer" class="ol-popup-closer"></a>
                     <div id="popup-content"></div>
-                    <button class="show">Show peers</button>
+                    <button class="showNodes">Show all nodes here</button>
+                    <p></p>
+                    <button class="show">Show peer connections</button>
                 </div>
                 <div style="display: none;">
                     <!-- Clickable label for brisbane -->
@@ -133,6 +135,7 @@
                 </div>
 
                 <script type="text/javascript">
+                    document.getElementById("show_all").disabled = true;
                     var style = new ol.style.Style({
                         stroke: new ol.style.Stroke({
                             color: '#a2da37',
@@ -213,6 +216,7 @@
                         }
                     });
                     var shown;
+                    var loc;
                     /**
                      * Add a click handler to hide the popup.
                      * @return {boolean} Don't follow the href.
@@ -291,7 +295,7 @@
                         var long = nearest['long'];
                         var lat = nearest['lat'];
                         shown = long + "," + lat;
-                        var loc = nearest['name'];
+                        loc = nearest['name'];
                         document.getElementById('brisbane').innerText=loc;
                         document.getElementById('brisbane').href = "https://en.wikipedia.org/wiki/" + loc.split("(")[0].trim().replace(" ", "_");
                         var pos = ol.proj.fromLonLat([long, lat]);
@@ -481,10 +485,16 @@
 
                     $('.show').on('click', function() {
                         hideConnections(shown);
+                        document.getElementById('show_all').disabled = false;
                         //alert(shown);
+                    });
+                    $('.showNodes').on('click', function() {
+                        var path = "/nodes?loc=" + loc.replace(" ", "");
+                        window.open(path);
                     });
                     $('.show_all').on('click', function() {
                         hideConnections(null);
+                        document.getElementById('show_all').disabled = true;
                         //alert(shown);
                     });
                 </script>

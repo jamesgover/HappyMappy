@@ -1,12 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
-      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous">
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <h2>Ethereum Network Nodes</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>IP address</th>
+        <th>Port</th>
+        <th>City</th>
+        <th>Country</th>
+        <th>Public Key</th>
+      </tr>
+    </thead>
+    <tbody id="nodetable">
+    </tbody>
+  </table>
+
+  <p>
+  <input type="button" value="Back to map" onclick="window.location.href = '/'" />
+  <input type="button" id="showall" value="Show all nodes" onclick="window.location.href = '/nodes'" />
+</p>
+</div>
+
+</body>
+
+<script>
+
+    function getParams() {
+      var vars = {};
+      var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+      });
+      return vars;
+    }
+
+    var params = getParams();
+
+    if(params.city === undefined && params.country === undefined && params.loc === undefined &&
+      params.ip === undefined && params.id === undefined && params.port === undefined) {
+      document.getElementById("showall").style.visibility = "hidden";
+    }
+
+    let data = {{data}};
+    var nodes = data["allEthereumnodes"]["nodes"];
+    var locs = data["allEthereumlocations"]["nodes"];
+    var mapping = {};
+    for(var i = 0; i < locs.length; i++) {
+      mapping[locs[i].loc] = locs[i].name;
+    }
+
+    function displayId(ip, port, id) {
+      console.log("aaa");
+      alert("The Public Key of the node with IP " + ip + ":" + port + " is:\n\n" + id);
+    }
+
+    function addRow(id, ip, port, city, country) {
+        if(params.id != undefined && params.id != id) {
+          return;
+        }
+        if(params.ip != undefined && params.ip != ip) {
+          return;
+        }
+        if(params.port != undefined && params.port != port) {
+          return;
+        }
+        if(params.city != undefined && params.city != city.replace(" ", "")) {
+          return;
+        }
+        if(params.country != undefined && params.country != country.replace(" ", "")) {
+          return;
+        }
+        if(params.loc != undefined && params.loc != city.replace(" ", "") + "(" + country + ")") {
+          return;
+        }
+
+        var body = document.getElementById("nodetable");
+        var row = document.createElement("tr");
+        var idCell = document.createElement("td");
+        var ipCell = document.createElement("td");
+        var portCell = document.createElement("td");
+        var cityCell = document.createElement("td");
+        var countryCell = document.createElement("td");
+        ipCell.appendChild(document.createTextNode(ip));
+        portCell.appendChild(document.createTextNode(port));
+
+        var cityHolder = document.createElement("a");
+        cityHolder.style = "text-decoration: none;";
+        cityHolder.href = "/nodes?city=" + city.replace(" ", "") + "&country=" + country.replace(" ", "");
+        cityHolder.appendChild(document.createTextNode(city));
+        cityCell.appendChild(cityHolder);
+
+        var countryHolder = document.createElement("a");
+        countryHolder.style = "text-decoration: none;";
+        countryHolder.href = "/nodes?country=" + country;
+        var flag = document.createElement("img");
+        flag.src = "https://www.countryflags.io/" + country + "/shiny/24.png";
+        countryHolder.appendChild(flag);
+        countryHolder.appendChild(document.createTextNode("          " + country));
+        countryCell.appendChild(countryHolder);        
+
+        var btn = document.createElement("input");
+        btn.type = "button";
+        btn.value = "Click to view";
+        btn.onclick = function(){displayId(ip, port, id); console.log("aaaa");};
+        idCell.appendChild(btn);
+
+        row.appendChild(ipCell);
+        row.appendChild(portCell);
+        row.appendChild(cityCell);
+        row.appendChild(countryCell);
+        row.appendChild(idCell);
+        body.appendChild(row);
+    }
+
+    for(var i = 0; i < nodes.length; i++) {
+      var id = nodes[i].nodeId;
+      var ipSpl = nodes[i].ip.split(":");
+      var locSpl = mapping[nodes[i].loc].split("(");
+      addRow(id, ipSpl[0], ipSpl[1], locSpl[0].trim(), locSpl[1].split(")")[0]);
+    }
+
+    //document.getElementById("nodetab").appendChild(header);
+  </script>
+</html>
+
+
+<!--<head>
+      Latest compiled and minified CSS
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 </head>
 
 <body>
+  <div class="container">
+  <table class="table" id="nodetab"></table>
+</div>
+    
+  <script>
 
-  memesaaa
+    let data = {{data}};
+    var nodes = data["allEthereumnodes"]["nodes"];
+    var locs = data["allEthereumlocations"]["nodes"];
+    var mapping = {};
+    for(var i = 0; i < locs.length; i++) {
+      mapping[locs[i].loc] = locs[i].name;
+    }
 
-  <!--<script>
+    function addRow(id, ip, port, city, country) {
+        var body = document.getElementById("nodetab");
+        var row = document.createElement("tr");
+        //var idCell = document.createElement("td");
+        var ipCell = document.createElement("td");
+        var portCell = document.createElement("td");
+        var cityCell = document.createElement("td");
+        var countryCell = document.createElement("td");
+        //idCell.appendChild(document.createTextNode(id));
+        ipCell.appendChild(document.createTextNode(ip));
+        portCell.appendChild(document.createTextNode(port));
+        cityCell.appendChild(document.createTextNode(city));
+        countryCell.appendChild(document.createTextNode(country));
+        //row.appendChild(idCell);
+        row.appendChild(ipCell);
+        row.appendChild(portCell);
+        row.appendChild(cityCell);
+        row.appendChild(countryCell);
+        body.appendChild(row);
+    }
+
+    for(var i = 0; i < nodes.length; i++) {
+      var id = nodes[i].nodeId;
+      var ipSpl = nodes[i].ip.split(":");
+      console.log(mapping[nodes[i].loc]);
+      var locSpl = mapping[nodes[i].loc].split("(");
+      console.log(locSpl);
+      addRow(id, ipSpl[0], ipSpl[1], locSpl[0].trim(), locSpl[1].split(")")[0]);
+    }
+
+    //document.getElementById("nodetab").appendChild(header);
+  </script>
+
+  <script>
     let data = {{data}};
     var graph = {"nodes": [], "links": []};
 
@@ -22,5 +206,5 @@
         .graphData(graph)
         .nodeLabel('ip')
         .nodeAutoColorBy('group');
-  </script>-->
-</body>
+  </script>
+</body> -->

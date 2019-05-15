@@ -6,24 +6,38 @@
 </head>
 
 <body>
-  memes
   <div id="3d-graph"></div>
 
   <script>
     let data = {{data}};
     var ipaddrs = new Set();
-    var 
+    var links = [];
 
     conns = data["allEthereumconnections"]["nodes"];
 
-    for(int i = 0; i < conns.length; i++) {
+    for(var i = 0; i < conns.length; i++) {
         var conn = conns[i];
-        ipaddrs.add(conn["ethereumnodeByNode"["ip"]]);
-        
-
-        graph["nodes"]
-
+        ipaddrs.add(conn["ethereumnodeByNode"]["ip"]);
+        ipaddrs.add(conn["ethereumnodeByNeighbour"]["ip"]);
+        var linkObj = {};
+        linkObj.source = conn["ethereumnodeByNode"]["ip"];
+        linkObj.target = conn["ethereumnodeByNeighbour"]["ip"];
+        links.push(linkObj);
     }
+
+    var nodes = [];
+
+    function addToNodes(value1, value2, set) {
+      var obj = {};
+      obj.id = value1;
+      obj.ip = value1;
+      obj.group = parseInt(value1.split(".")[0]);
+      nodes.push(obj);
+    }
+
+    ipaddrs.forEach(addToNodes);
+
+    var graph = {"nodes": nodes, "links": links};
 
     const Graph = ForceGraph3D()
       (document.getElementById('3d-graph'))
