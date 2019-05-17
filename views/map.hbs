@@ -175,7 +175,7 @@
                                 fill: new ol.style.Fill({
                                     color: 'rgba(244,244,255,0.4)'
                                 }),
-                                stroke: new ol.style.Stroke({
+                                stroke: new ol.style.Stroke( {
                                     color: '#3399CC',
                                     width: 1.25
                                 }),
@@ -497,8 +497,7 @@
                         //alert(shown);
                     });
                     $('.showNodes').on('click', function() {
-                        var spl = loc.split("(");
-                        var path = "/nodes?city=" + spl[0].split(" ").join("") + "&country=" + spl[1].split(")")[0];
+                        var path = "/nodes?loc=" + loc.replace(" ", "");
                         window.open(path);
                     });
                     $('.show_all').on('click', function() {
