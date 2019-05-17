@@ -122,7 +122,7 @@
     }
 
     for(var i = 0; i < nodes.length; i++) {
-      var id = nodes[i].nodeId;
+      var id = nodes[i].id;
       var ipSpl = nodes[i].ip.split(":");
       var locSpl = mapping[nodes[i].loc].split("(");
       addRow(id, ipSpl[0], ipSpl[1], locSpl[0].trim(), locSpl[1].split(")")[0]);

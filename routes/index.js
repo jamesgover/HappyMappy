@@ -66,7 +66,7 @@ const locQuery = `{
   }
   allEthereumnodes {
     nodes {
-      nodeId
+      id
       ip
       loc
     }
